@@ -2,9 +2,11 @@
   {
     "_id": "firebase_firestore_facade",
     "_title": "",
-    "_createdAt": "2021-07-03T18:04:37.802Z",
-    "_updatedAt": "2021-07-03T18:04:37.802Z",
+    "_createdAt": "2021-07-31T19:17:54.945Z",
+    "_updatedAt": "2021-07-31T19:17:54.945Z",
     "_description": "",
-    "_show": false
+    "_show": false,
+    "_externalRepos": [],
+    "_techUsed": []
   }
 ]

@@ -10,7 +10,9 @@ export class SoftwareArticle {
     private _updatedAt: Date,
     private _description: string,
     private _body: string,
-    private _show: boolean
+    private _show: boolean,
+    private _externalRepos: ExternalRepo[],
+    private _techUsed: Tech[],
   ) { }
 
 
@@ -41,7 +43,9 @@ export class SoftwareArticle {
       _createdAt: this._createdAt,
       _updatedAt: this._updatedAt,
       _description: this._description,
-      _show: this._show
+      _show: this._show,
+      _externalRepos: this._externalRepos,
+      _techUsed: this._techUsed,
     }
   }
 }
@@ -53,11 +57,28 @@ interface SoftwareArticleContent {
 
 interface SoftwareArticleMeta {
   _id: string;
-  _title: string,
-  _createdAt: Date,
-  _updatedAt: Date,
-  _description: string,
-  _show: boolean
+  _title: string;
+  _createdAt: Date;
+  _updatedAt: Date;
+  _description: string;
+  _show: boolean;
+  _externalRepos: ExternalRepo[];
+  _techUsed: Tech[];
+}
+
+interface ExternalRepo {
+  _id: string;
+  _imagePath: string;
+  _url: string;
+  _title: string;
+  _hoverText: string;
+}
+
+interface Tech {
+  _id: string;
+  _imagePath: string;
+  _title: string;
+  _hoverText: string;
 }
 
 export class SoftwareArticlesProxy {
@@ -114,7 +135,9 @@ export class SoftwareArticlesProxy {
         dto._updatedAt,
         dto._description,
         dto._body,
-        dto._show
+        dto._show,
+        dto._externalRepos,
+        dto._techUsed,
       )
     };
     this._softwareArticles = merged.map(mapper);
@@ -148,7 +171,9 @@ export class SoftwareArticlesProxy {
         rawSoftwareArticle.updatedAt,
         '',
         rawSoftwareArticle.body,
-        false
+        false,
+        [],
+        [],
       )
     );
   }

@@ -1,0 +1,204 @@
+<h1>
+F3 - Firebase Firestore Facade
+</h1>
+<p><a href="https://github.com/brombaut/firebase-firestore-facade/actions/workflows/build.yml"><img src="https://github.com/brombaut/firebase-firestore-facade/actions/workflows/build.yml/badge.svg" alt="CI" /></a> <a href="https://app.codecov.io/gh/brombaut/firebase-firestore-facade"><img src="https://img.shields.io/codecov/c/github/brombaut/firebase-firestore-facade" alt="Codecov" /></a> <a href="https://www.npmjs.com/package/firebase-firestore-facade"><img src="https://img.shields.io/npm/v/firebase-firestore-facade" alt="npm" /></a> <img src="https://img.shields.io/david/brombaut/firebase-firestore-facade" alt="David" /> <img src="https://img.shields.io/librariesio/release/npm/firebase-firestore-facade" alt="Libraries.io dependency status for latest release" /></p>
+<p>
+<p>Facade package for the <a href="https://www.npmjs.com/package/firebase">Firebase</a> package (<a href="https://firebase.google.com/docs/firestore/">Official Docs</a>). Simplifies the interface of the <a href="https://www.npmjs.com/package/@firebase/firestore">Firestore</a> module to a CRUD app with minimal setup.</p>
+</p>
+<h2>
+Installing
+</h2>
+<p>
+<p>For the latest version:</p>
+</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> i firebase-firestore-facade</span></code></pre></div>
+<h2>
+Modules
+</h2>
+<h4>
+<b>F3Interfacer</b>
+</h4>
+<p>
+<p>Main interface that is parameterized with the class that will be used to represent the records in the Firestore database (must implement ILocalType).</p>
+</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>interface F3Interfacer<span class="op">&lt;</span>LocalType<span class="op">&gt;</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">init</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>F3Interfacer<span class="op">&lt;</span>LocalType<span class="op">&gt;&gt;;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">get</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType[]<span class="op">&gt;;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getById</span>(id<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">put</span>(t<span class="op">:</span> ILocalType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">post</span>(t<span class="op">:</span> IFirestoreType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">delete</span>(t<span class="op">:</span> ILocalType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">closeConnection</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>F3Wrapper</b>
+</h4>
+<p>
+<p>You can use this class directly, or create an additional wrapper class for your specific collection (see the bookshelf example below). Its constructor takes a Firebase configuration object which implements <code>FirebaseConfigurer</code> (see below), the <code>string</code> name of the collection you want to connect to, and a mapper function that takes an <code>IFirestoreType</code> and returns a <code>LocalType</code>.</p>
+</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>class F3Wrapper<span class="op">&lt;</span>LocalType<span class="op">&gt;</span> implements F3Interfacer<span class="op">&lt;</span>LocalType<span class="op">&gt;</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  private _config<span class="op">:</span> FirebaseConfigurer<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  private _collectionName<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  private _mapper<span class="op">:</span> (o<span class="op">:</span> IFirestoreType) <span class="kw">=&gt;</span> LocalType<span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  private _collection<span class="op">!:</span> FirestoreCollection<span class="op">&lt;</span>LocalType<span class="op">&gt;;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(config<span class="op">:</span> FirebaseConfigurer<span class="op">,</span> collection<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> mapper<span class="op">:</span> (o<span class="op">:</span> IFirestoreType) <span class="kw">=&gt;</span> LocalType) {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_config</span> <span class="op">=</span> config<span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_collectionName</span> <span class="op">=</span> collectionName<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_mapper</span> <span class="op">=</span> mapper<span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    return this<span class="op">;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">init</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>F3Wrapper<span class="op">&lt;</span>LocalType<span class="op">&gt;&gt;</span> {</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    return this<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  async <span class="kw">get</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType[]<span class="op">&gt;</span> {</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">getById</span>(id<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;</span> {</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">put</span>(t<span class="op">:</span> ILocalType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;</span> {</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">post</span>(t<span class="op">:</span> IFirestoreType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>LocalType<span class="op">&gt;</span> {</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">delete</span>(t<span class="op">:</span> ILocalType)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">closeConnection</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>IFirestoreType</b>
+</h4>
+<p>
+<p>A class should be created that acts as a data transfer object between the raw attributes of the records being stored in the Firestore database and the local object that you will use to represent the records on the frontend (see <b>ILocalType</b> below). This class should implement the <code>IFirestoreType</code> interface, which must have an <code>id: string</code> attribute.</p>
+</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>export interface IFirestoreType {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>ILocalType</b>
+</h4>
+<p>
+<p>Classes that implement the <code>ILocalType</code> interface must have an <code>id: string</code> attribute and a <code>toFirestoreType(): IFirestoreType</code> method.</p>
+</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>interface ILocalType {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">toFirestoreType</span>()<span class="op">:</span> IFirestoreType<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>FirebaseConfigurer</b>
+</h4>
+<p>
+<p>See the <a href="https://firebase.google.com/docs/web/setup#config-object">Firebase project configuration docs</a></p>
+</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>interface FirebaseConfigurer {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  apiKey<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  authDomain<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  projectId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  storageBucket<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  messagingSenderId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  appId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  measurementId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  auth<span class="op">?:</span> FirebaseAuthentication<span class="op">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>interface FirebaseAuthentication {</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  email<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  password<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2>
+Recommended Usage
+</h2>
+<h3>
+<b>Example - Bookshelf</b>
+</h3>
+<p>
+<p>We will use the idea of a bookshelf to demonstrate how to use F3. Lets say that we have a <code>books</code> collection in our Firestore database, and each of these records only has a <code>title</code> attribute.</p>
+</p>
+<h4>
+<b>FirestoreBook</b>
+</h4>
+<p>
+<p>We create a <code>FirestoreBook</code> class that implements the <code>IFirestoreType</code> interface. This class has a <code>title</code> attribute, as well as the <code>id</code> attribute. Notice that, even though the records in the Firestore collection might not have an <code>id</code> attribute, they can be generated automatically by Firestore.</p>
+</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>class FirestoreBook implements IFirestoreType {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  title<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>Book</b>
+</h4>
+<p>
+<p>We create a <code>Book</code> class that implements the <code>ILocalType</code> interface. We have an <code>id</code> getter, and a method <code>toFirestoreType</code> that returns the object as a <code>FirestoreBook</code>, which implements the <code>IFirestoreType</code> interface.</p>
+</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>class Book implements ILocalType {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  private _id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  private _title<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(dto<span class="op">:</span> FirestoreBook) {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">if</span> (<span class="op">!</span>dto<span class="op">.</span><span class="at">id</span>) {</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      throw <span class="kw">new</span> <span class="fu">Error</span>(<span class="st">&#39;DTO does not have an ID&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_id</span> <span class="op">=</span> dto<span class="op">.</span><span class="at">id</span><span class="op">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_title</span> <span class="op">=</span> dto<span class="op">.</span><span class="at">title</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">toFirestoreType</span>()<span class="op">:</span> FirestoreBook {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    return {</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      id<span class="op">:</span> this<span class="op">.</span><span class="at">_id</span><span class="op">,</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      title<span class="op">:</span> this<span class="op">.</span><span class="at">_title</span><span class="op">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="kw">get</span> <span class="fu">id</span>()<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    return this<span class="op">.</span><span class="at">_id</span><span class="op">;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">get</span> <span class="fu">title</span>()<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    return this<span class="op">.</span><span class="at">_title</span><span class="op">;</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4>
+<b>F3Bookshelf</b>
+</h4>
+<p>
+<p>Finally, we create a class <code>F3Bookshelf</code>, which will act as our facade between the Firestore database and our frontend. This class implements the <code>F3Interfacer</code> interface parameterized with our <code>Book</code> type. We have an <code>F3Wrapper</code> attribute (again, parameterized with our <code>Book</code> type), a <code>string</code> of the name of our Firestore collection (in our case <code>books</code>), and a <code>(o: IFirestoreType) =&gt; Book</code> function, which is used to map our <code>FirestoreBook</code> objects to their associated <code>Book</code> objects.</p>
+<p>We instantiate the <code>F3Wrapper</code> in the constructor, including the <code>firebaseConfig</code> object, which must implement the <code>FirebaseConfigurer</code> interface (see above).</p>
+</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>class F3Bookshelf implements F3Interfacer<span class="op">&lt;</span>Book<span class="op">&gt;</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  private _f3<span class="op">!:</span> F3Wrapper<span class="op">&lt;</span>Book<span class="op">&gt;;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  private _firebaseConfig<span class="op">:</span> FirebaseConfigurer<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  private _collection <span class="op">=</span> <span class="st">&#39;books_prod&#39;</span><span class="op">;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  private _mapper<span class="op">:</span> (o<span class="op">:</span> IFirestoreType) <span class="kw">=&gt;</span> Book <span class="op">=</span> (o<span class="op">:</span> IFirestoreType) <span class="kw">=&gt;</span> <span class="kw">new</span> <span class="fu">Book</span>(o <span class="im">as</span> FirestoreBook)<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(firebaseConfig<span class="op">:</span> FirebaseConfigurer) {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_firebaseConfig</span> <span class="op">=</span> firebaseConfig<span class="op">;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">init</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>F3Bookshelf<span class="op">&gt;</span> {</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    this<span class="op">.</span><span class="at">_f3</span> <span class="op">=</span> await <span class="kw">new</span> <span class="fu">F3Wrapper</span><span class="op">&lt;</span>Book<span class="op">&gt;</span>(this<span class="op">.</span><span class="at">_firebaseConfig</span><span class="op">,</span> this<span class="op">.</span><span class="at">_collection</span><span class="op">,</span> this<span class="op">.</span><span class="at">_mapper</span>)<span class="op">.</span><span class="fu">init</span>()<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    return this<span class="op">;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  async <span class="kw">get</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Book[]<span class="op">&gt;</span> {</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    return await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">get</span>()<span class="op">;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">getById</span>(id<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Book<span class="op">&gt;</span> {</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    return await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">getById</span>(id)<span class="op">;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">put</span>(t<span class="op">:</span> Book)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Book<span class="op">&gt;</span> {</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    return await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">put</span>(t)<span class="op">;</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">post</span>(t<span class="op">:</span> FirestoreBook)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Book<span class="op">&gt;</span> {</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    return await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">post</span>(t)<span class="op">;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">delete</span>(t<span class="op">:</span> Book)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    return await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">delete</span>(t)<span class="op">;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  async <span class="fu">closeConnection</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    await this<span class="op">.</span><span class="at">_f3</span><span class="op">.</span><span class="fu">closeConnection</span>()<span class="op">;</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>

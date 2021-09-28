@@ -1,0 +1,57 @@
+<h1 id="article-scraper">Article Scraper</h1>
+<p><a href="https://github.com/brombaut/article-scraper/actions/workflows/build_and_test.yml"><img src="https://github.com/brombaut/article-scraper/actions/workflows/build_and_test.yml/badge.svg" alt="CI" /></a> <a href="https://www.npmjs.com/package/article_scraper"><img src="https://img.shields.io/npm/v/article_scraper" alt="npm" /></a> <a href="https://app.codecov.io/gh/brombaut/article-scraper"><img src="https://img.shields.io/codecov/c/github/brombaut/article-scraper" alt="Codecov" /></a></p>
+<p>Package for scraping information from different blogging websites.</p>
+<h3 id="currently-supported-sites">✅ Currently supported sites</h3>
+<ul>
+<li><a href="https://dev.to/">dev.to</a></li>
+</ul>
+<h3 id="planned-sites-to-support">🚧 Planned sites to support:</h3>
+<ul>
+<li><a href="https://medium.com/">medium.com</a></li>
+<li><a href="https://martinfowler.com/">martinfowler.com</a></li>
+</ul>
+<h2 id="installing">Installing</h2>
+<p>
+<p>For the latest version:</p>
+</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> i article-tracker</span></code></pre></div>
+<h2 id="usage">Usage</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { ArticleMetaData<span class="op">,</span> ArticleScraper } from <span class="st">&quot;article_scraper&quot;</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>const url <span class="op">=</span> <span class="st">&quot;https://dev.to/ashish9342/commenting-code-good-practices-3d23&quot;</span><span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>const scraper<span class="op">:</span> ArticleScraper <span class="op">=</span> <span class="kw">new</span> <span class="fu">ArticleScraper</span>(url)<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>await scraper<span class="op">.</span><span class="fu">scrape</span>()<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>const result<span class="op">:</span> ArticleMetaData <span class="op">=</span> scraper<span class="op">.</span><span class="fu">articleMetaData</span>()<span class="op">;</span></span></code></pre></div>
+<p>The <code>ArticleMetaData</code> result will contain information about the article in the following format. Any errors encountered during scraping will be added to the <code>errors</code> attribute.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ArticleMetaData {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  title<span class="op">:</span> <span class="st">&#39;Commenting Code | Good Practices&#39;</span><span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  minuteRead<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  tags<span class="op">:</span> [</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      name<span class="op">:</span> <span class="st">&#39;#programming&#39;</span><span class="op">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      href<span class="op">:</span> <span class="st">&#39;https://dev.to/t/programming&#39;</span><span class="op">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      color<span class="op">:</span> <span class="st">&#39;#ffffff&#39;</span><span class="op">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      backgroundColor<span class="op">:</span> <span class="st">&#39;#890606&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      name<span class="op">:</span> <span class="st">&#39;#javascript&#39;</span><span class="op">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      href<span class="op">:</span> <span class="st">&#39;https://dev.to/t/javascript&#39;</span><span class="op">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>      color<span class="op">:</span> <span class="st">&#39;#000000&#39;</span><span class="op">,</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      backgroundColor<span class="op">:</span> <span class="st">&#39;#F7DF1E&#39;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      name<span class="op">:</span> <span class="st">&#39;#codequality&#39;</span><span class="op">,</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      href<span class="op">:</span> <span class="st">&#39;https://dev.to/t/codequality&#39;</span><span class="op">,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      color<span class="op">:</span> <span class="st">&#39;#000000&#39;</span><span class="op">,</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      backgroundColor<span class="op">:</span> <span class="st">&#39;#e5fffd&#39;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>      name<span class="op">:</span> <span class="st">&#39;#productivity&#39;</span><span class="op">,</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>      href<span class="op">:</span> <span class="st">&#39;https://dev.to/t/productivity&#39;</span><span class="op">,</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>      color<span class="op">:</span> <span class="st">&#39;#C8F7C5&#39;</span><span class="op">,</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>      backgroundColor<span class="op">:</span> <span class="st">&#39;#2A0798&#39;</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  url<span class="op">:</span> <span class="st">&#39;https://dev.to/ashish9342/commenting-code-good-practices-3d23&#39;</span><span class="op">,</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  errors<span class="op">:</span> []</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>

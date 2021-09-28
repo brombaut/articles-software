@@ -7,6 +7,10 @@ const SOFTWARE_MD_FILES: SoftwareMdFile[] = [
   {
     id: 'firebase_firestore_facade',
     path: '/Users/BenRombaut/dev/f3/README.md',
+  },
+  {
+    id: 'article_scraper',
+    path: '/Users/BenRombaut/dev/article_scraper/README.md',
   }
 ]
 

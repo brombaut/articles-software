@@ -3,6 +3,9 @@ import { SoftwareArticlesProxy } from "./SoftwareArticle";
 import { SoftwareMdFile } from "./SoftwareMdFile";
 import { SoftwareMdToHtmlConverter } from "./SoftwareMdToHtmlConverter";
 
+// https://raw.githubusercontent.com/brombaut/firebase-firestore-facade/main/README.md
+// https://raw.githubusercontent.com/brombaut/article-scraper/main/README.md
+
 const SOFTWARE_MD_FILES: SoftwareMdFile[] = [
   {
     id: 'firebase_firestore_facade',
@@ -11,6 +14,10 @@ const SOFTWARE_MD_FILES: SoftwareMdFile[] = [
   {
     id: 'article_scraper',
     path: '/Users/BenRombaut/dev/article_scraper/README.md',
+  },
+  {
+    id: 'benrombautca',
+    path: '/Users/BenRombaut/dev/benrombaut.ca/README.md',
   }
 ]
 
